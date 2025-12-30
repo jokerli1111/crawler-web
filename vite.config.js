@@ -16,9 +16,11 @@ export default defineConfig({
     })
   ],
   server: {
+    host: "0.0.0.0",
+    port: 9527,
     proxy: {
       '/tasks': {
-        target: 'http://192.168.1.140:9527',
+        target: 'http://192.168.1.140:25555',
         changeOrigin: true
       }
     }
