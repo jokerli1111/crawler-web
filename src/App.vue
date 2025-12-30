@@ -3,7 +3,32 @@
     <el-container>
       <el-aside width="200px">导航栏</el-aside>
       <el-container>
-        <el-header>爬虫任务表</el-header>
+        <el-header>
+          <el-input
+            v-model="input1"
+            style="max-width: 500px"
+            placeholder="请输入"
+            class="input-with-select"
+            :disabled="select === 'false'"
+          >
+            <template #prepend>
+              <el-select
+                v-model="select"
+                placeholder="请选择"
+                style="width: 90px"
+              >
+                <el-option label="请选择" value="false">全部</el-option>
+                <el-option label="source" value="source" />
+                <el-option label="status" value="status" />
+                <el-option label="type" value="type" />
+              </el-select>
+            </template>
+            <template #append>
+              <el-button :icon="Search" @click="loadTasks" />
+            </template>
+          </el-input>
+          <el-button type="primary" @click="loadTasks">刷新</el-button>
+        </el-header>
         <el-main>
           <div>
             <el-table :data="tasksData" style="width: 100%" height="450">
@@ -76,6 +101,12 @@
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 
+import { Search } from "@element-plus/icons-vue";
+
+// 搜索框
+const input1 = ref("");
+const select = ref("false");
+
 // 页面加载
 onMounted(() => {
   loadTasks();
@@ -88,6 +119,7 @@ const limit = ref(10);
 const total = ref(0);
 
 
+
 // 获取任务列表
 const loadTasks = async () => {
   try {
@@ -96,11 +128,21 @@ const loadTasks = async () => {
       limit: limit.value,
     };
 
-    const res = await axios.post("/tasks/list", query);
+    if (select.value === "source" && input1.value) {
+      query.source = input1.value;
+    }
+    if (select.value === "status" && input1.value) {
+      query.status = input1.value;
+    }
+    if (select.value === "type" && input1.value) {
+      query.type = input1.value;
+    }
+    console.log(query);
 
+    const res = await axios.post("/tasks/list", query);
+    console.log(res);
     tasksData.value = res.data.data;
     total.value = res.data.total;
-
   } catch (err) {
     console.error("获取任务列表失败", err);
   }
@@ -147,8 +189,12 @@ const stopTask = async (id) => {
     console.error("停止任务失败", err);
   }
 };
-
 </script>
 
 <!-- css -->
-<style scoped></style>
+<style scoped>
+/* 搜索框样式 */
+.input-with-select .el-input-group__prepend {
+  background-color: var(--el-fill-color-blank);
+}
+</style>
